@@ -1,0 +1,185 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(affy)
+library(limma)
+library(tibble)
+library(ggplot2)
+library(dplyr)
+library(ggrepel)
+library(ggrepel)
+library(readr)
+library(limma)
+library(pheatmap)
+library(genefilter)
+```
+
+
+```{r}
+library(GEOquery)
+## change my_id to be the dataset that you want.
+my_id <- "GSE1818"
+gse <- getGEO(my_id)
+```
+
+
+```{r}
+gse
+```
+
+```{r}
+gse[[1]]
+```
+
+
+
+```{r}
+gse1 <- gse[[1]]
+```
+
+
+```{r}
+gse1
+```
+
+
+
+```{r}
+gse1[[1]]
+```
+
+
+```{r}
+filter <- colnames(gse1)[gse1@phenoData@data$"title" =="Normal testis 0140" | gse1@phenoData@data$"title" =="Normal testis 9013" | gse1@phenoData@data$"title" =="Embryonal carcinoma 0502" |gse1@phenoData@data$"title" =="Embryonal carcinoma 0564" | gse1@phenoData@data$"title" =="Embryonal carcinoma 1017" | gse1@phenoData@data$"title" =="Embryonal carcinoma 1740" | gse1@phenoData@data$"title" =="Embryonal carcinoma 1838" ]
+```
+
+
+```{r}
+filter
+```
+
+
+```{r}
+gse1.filt <- gse1[,filter]
+```
+
+
+```{r}
+gse1.filt
+```
+
+
+
+```{r}
+pData(gse1.filt) ## print the sample information
+```
+
+```{r}
+fData(gse1.filt) ## print the gene annotation
+```
+
+```{r}
+exprs(gse1.filt) ## print the expression data
+```
+
+
+```{r}
+summary(exprs(gse1.filt))
+```
+
+
+```{r}
+boxplot(exprs(gse1.filt), outline = FALSE)
+```
+
+
+
+exprs(gse1.filt) <- log2(exprs(gse1.filt))
+boxplot(exprs(gse1.filt),outline=FALSE)
+
+
+
+
+
+```{r}
+sampleInfo <- pData(gse1.filt) # nolint
+sampleInfo
+```
+
+```{r}
+sampleInfonew <- cbind(sampleName = rownames(sampleInfo), sampleInfo)
+rownames(sampleInfonew) <- 1:nrow(sampleInfonew)
+```
+
+
+```{r}
+sampleInfonew
+```
+
+
+```{r fig.height=15, fig.width=15}
+corMatrix <- cor(exprs(gse1.filt), use = "c")
+pheatmap(corMatrix)
+```
+
+
+```{r}
+rownames(sampleInfonew)
+```
+
+
+```{r}
+colnames(corMatrix)
+```
+
+
+```{r}
+rownames(sampleInfonew) <- colnames(corMatrix)
+```
+
+
+```{r}
+as.numeric(corMatrix)
+```
+
+
+varFilter(gse1.filt, var.func=IQR, var.cutoff=0.5, filterByQuantile=TRUE)
+
+
+
+gse1.filt.naomit <- gse1.filt[rowSums(is.na(pData(gse1.filt)))==0,]
+
+
+```{r}
+gse1.filt.naomit <- gse1.filt
+```
+
+
+```{r}
+exprs(gse1.filt.naomit)[ is.na(exprs(gse1.filt.naomit)) ] <- 0
+```
+
+
+```{r}
+exprs(gse1.filt.naomit)
+```
+
+
+
+```{r}
+pca <- prcomp(t(exprs(gse1.filt)))
+```
+
+
+
+```{r}
+pca
+```
+
+
+
+
